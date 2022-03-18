@@ -172,4 +172,6 @@ app.listen(process.env.PORT ? parseInt(process.env.PORT) : 9001, process.env.HOS
     app.log.error(err);
     process.exit(1);
   }
+
+  if (process.send) process.send('ready');
 });
