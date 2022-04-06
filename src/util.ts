@@ -1,4 +1,5 @@
 import { RawData, WebSocket } from 'ws';
+
 import { WebappOpCloseReason } from './protocol';
 
 export function toBuffer(data: RawData) {
@@ -7,7 +8,7 @@ export function toBuffer(data: RawData) {
   return Buffer.from(data);
 }
 
-export function timeoutWebsocket(ws: WebSocket, ms: number = 10000) {
+export function timeoutWebsocket(ws: WebSocket, ms = 10000) {
   const timer = setTimeout(() => ws.close(), ms);
   ws.once('close', () => clearTimeout(timer));
   ws.once('message', () => clearTimeout(timer));

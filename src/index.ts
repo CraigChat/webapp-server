@@ -1,10 +1,9 @@
 import dotenv from 'dotenv';
-dotenv.config();
-
 import fastify from 'fastify';
-import fastifyWebsocket from 'fastify-websocket';
 import fastifyHelmet from 'fastify-helmet';
 import rateLimit from 'fastify-rate-limit';
+import fastifyWebsocket from 'fastify-websocket';
+
 import {
   ConnectionType,
   ConnectionTypeMask,
@@ -16,8 +15,10 @@ import {
   WebappOp,
   WebappOpCloseReason
 } from './protocol';
-import { closeWebsocket, timeoutWebsocket, toBuffer } from './util';
 import { getShardFromConnectionToken, Shard, ShardIdentifyPayload, shardsConnected } from './shards';
+import { closeWebsocket, timeoutWebsocket, toBuffer } from './util';
+
+dotenv.config();
 
 // TODO proper logging
 
@@ -56,8 +57,7 @@ app.get('/', { websocket: true }, (connection) => {
   timeoutWebsocket(connection.socket);
   connection.socket.once('message', (data) => {
     const message = toBuffer(data);
-    if (message.length < EnnuicastrParts.login.length)
-      return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_MESSAGE);
+    if (message.length < EnnuicastrParts.login.length) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_MESSAGE);
     const cmd: EnnuicastrId = message.readUInt32LE(0);
     if (cmd !== EnnuicastrId.LOGIN) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_ID);
 
@@ -77,10 +77,8 @@ app.get('/', { websocket: true }, (connection) => {
     const dataType: DataTypeFlag = flags & DataTypeMask;
     const isContinuous = !!(flags & Feature.CONTINUOUS);
 
-    if (dataType === DataTypeFlag.FLAC && !shard.payload.flacEnabled)
-      return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_FLAGS);
-    if (isContinuous && !shard.payload.continuousEnabled)
-      return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_FLAGS);
+    if (dataType === DataTypeFlag.FLAC && !shard.payload.flacEnabled) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_FLAGS);
+    if (isContinuous && !shard.payload.continuousEnabled) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_FLAGS);
     if (![ConnectionType.DATA, ConnectionType.PING, ConnectionType.MONITOR].includes(connectionType))
       return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_CONNECTION_TYPE);
 
@@ -118,8 +116,7 @@ app.get('/shard', { websocket: true }, (connection, req) => {
     }
 
     if (!payload.id || !payload.ennuiKey) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_MESSAGE);
-    if (shardsConnected.has(payload.id))
-      return closeWebsocket(connection.socket, WebappOpCloseReason.ALREADY_CONNECTED);
+    if (shardsConnected.has(payload.id)) return closeWebsocket(connection.socket, WebappOpCloseReason.ALREADY_CONNECTED);
 
     const shard = new Shard(connection.socket, payload);
     console.log(`Shard ${shard.id} connected (connectionToken=${shard.connectionToken})`, payload);

@@ -1,19 +1,7 @@
 import dotenv from 'dotenv';
-dotenv.config();
-
-import { WebSocket } from 'ws';
 import { createWriteStream } from 'fs';
-import OggEncoder, { BOS } from './ogg';
-import {
-  FLAC_HEADER_44k,
-  FLAC_HEADER_44k_VAD,
-  FLAC_HEADER_48k,
-  FLAC_HEADER_48k_VAD,
-  FLAC_TAGS,
-  OPUS_HEADERS_MONO,
-  OPUS_MONO_HEADER_VAD,
-  write
-} from './util';
+import { WebSocket } from 'ws';
+
 import {
   ConnectionType,
   ConnectionTypeMask,
@@ -27,6 +15,19 @@ import {
   WebappOpCloseReason
 } from '../protocol';
 import { toBuffer } from '../util';
+import OggEncoder, { BOS } from './ogg';
+import {
+  FLAC_HEADER_44k,
+  FLAC_HEADER_44k_VAD,
+  FLAC_HEADER_48k,
+  FLAC_HEADER_48k_VAD,
+  FLAC_TAGS,
+  OPUS_HEADERS_MONO,
+  OPUS_MONO_HEADER_VAD,
+  write
+} from './util';
+
+dotenv.config();
 
 interface ShardClientOptions {
   id: string;
@@ -130,7 +131,7 @@ class ShardClient {
     let user = this.webUsers.get(username);
     if (user && (user.connected || user.dataType !== dataType || user.continuous !== continuous)) {
       // Try another track
-      var i;
+      let i;
       for (i = 2; i < 16; i++) {
         webUserID = username + ' (' + i + ')#web';
         user = this.webUsers.get(webUserID);
@@ -212,7 +213,7 @@ class ShardClient {
     // And current speaking states
     for (const trackNo in this.speaking) {
       if (!this.speaking[trackNo]) continue;
-      var buf = Buffer.alloc(EnnuicastrParts.speech.length);
+      const buf = Buffer.alloc(EnnuicastrParts.speech.length);
       buf.writeUInt32LE(EnnuicastrId.SPEECH, 0);
       buf.writeUInt32LE(parseInt(trackNo), EnnuicastrParts.speech.index);
       buf.writeUInt32LE(this.speaking[trackNo] ? 1 : 0, EnnuicastrParts.speech.status);
@@ -236,7 +237,7 @@ class ShardClient {
     // And current speaking states
     for (const trackNo in this.speaking) {
       if (!this.speaking[trackNo]) continue;
-      var buf = Buffer.alloc(EnnuicastrParts.speech.length);
+      const buf = Buffer.alloc(EnnuicastrParts.speech.length);
       buf.writeUInt32LE(EnnuicastrId.SPEECH, 0);
       buf.writeUInt32LE(parseInt(trackNo), EnnuicastrParts.speech.index);
       buf.writeUInt32LE(this.speaking[trackNo] ? 1 : 0, EnnuicastrParts.speech.status);
@@ -257,15 +258,14 @@ class ShardClient {
 
     // Send to all clients
     for (const [clientId, type] of this.clients) {
-      if (clientId !== excludeClientId && type !== ConnectionType.PING)
-        this.ws.send(this.wrapMessage(buf, clientId, WebappOp.DATA));
+      if (clientId !== excludeClientId && type !== ConnectionType.PING) this.ws.send(this.wrapMessage(buf, clientId, WebappOp.DATA));
     }
   }
 
   monitorSetSpeaking(trackNo: number, speaking: boolean) {
     if (this.speaking[trackNo] === speaking) return;
     this.speaking[trackNo] = speaking;
-    var buf = Buffer.alloc(EnnuicastrParts.speech.length);
+    const buf = Buffer.alloc(EnnuicastrParts.speech.length);
     buf.writeUInt32LE(EnnuicastrId.SPEECH, 0);
     buf.writeUInt32LE(trackNo, EnnuicastrParts.speech.index);
     buf.writeUInt32LE(speaking ? 1 : 0, EnnuicastrParts.speech.status);
@@ -290,8 +290,7 @@ class ShardClient {
     switch (cmd) {
       case EnnuicastrId.INFO: {
         // FIXME: We're counting on the fact that only FLAC sends info right now
-        if (message.length != EnnuicastrParts.info.length)
-          return this.closeClient(clientId, WebappOpCloseReason.INVALID_MESSAGE);
+        if (message.length != EnnuicastrParts.info.length) return this.closeClient(clientId, WebappOpCloseReason.INVALID_MESSAGE);
 
         const key = message.readUInt32LE(EnnuicastrParts.info.key);
         const value = message.readUInt32LE(EnnuicastrParts.info.value);
@@ -302,13 +301,7 @@ class ShardClient {
             0,
             userTrackNo,
             0,
-            value === 44100
-              ? user.continuous
-                ? FLAC_HEADER_44k_VAD
-                : FLAC_HEADER_44k
-              : user.continuous
-              ? FLAC_HEADER_48k_VAD
-              : FLAC_HEADER_48k,
+            value === 44100 ? (user.continuous ? FLAC_HEADER_44k_VAD : FLAC_HEADER_44k) : user.continuous ? FLAC_HEADER_48k_VAD : FLAC_HEADER_48k,
             BOS
           );
           write(headerEncoder2, 0, userTrackNo, 1, FLAC_TAGS);
@@ -316,8 +309,7 @@ class ShardClient {
         break;
       }
       case EnnuicastrId.DATA: {
-        if (message.length < EnnuicastrParts.data.length)
-          return this.closeClient(clientId, WebappOpCloseReason.INVALID_MESSAGE);
+        if (message.length < EnnuicastrParts.data.length) return this.closeClient(clientId, WebappOpCloseReason.INVALID_MESSAGE);
 
         let granulePos = message.readUIntLE(EnnuicastrParts.data.granulePos, 6);
 
@@ -399,20 +391,19 @@ class ShardClient {
             if (data.length < 4) return this.closeClient(clientId, WebappOpCloseReason.INVALID_MESSAGE);
             const cmd: EnnuicastrId = data.readUInt32LE(0);
             switch (cmd) {
-              case EnnuicastrId.PING:
-                if (data.length !== EnnuicastrParts.ping.length)
-                  return this.closeClient(clientId, WebappOpCloseReason.INVALID_MESSAGE);
+              case EnnuicastrId.PING: {
+                if (data.length !== EnnuicastrParts.ping.length) return this.closeClient(clientId, WebappOpCloseReason.INVALID_MESSAGE);
 
                 // Pong with our current time
-                var ret = Buffer.alloc(EnnuicastrParts.pong.length);
+                const ret = Buffer.alloc(EnnuicastrParts.pong.length);
                 ret.writeUInt32LE(EnnuicastrId.PONG, 0);
                 data.copy(ret, EnnuicastrParts.pong.clientTime, EnnuicastrParts.ping.clientTime);
-                var tm = process.hrtime(startTime);
+                const tm = process.hrtime(startTime);
                 ret.writeDoubleLE(tm[0] * 1000 + tm[1] / 1000000, EnnuicastrParts.pong.serverTime);
                 console.log('ping from', clientId);
                 this.ws.send(this.wrapMessage(ret, clientId));
                 break;
-
+              }
               default:
                 // No other commands accepted
                 return this.closeClient(clientId, WebappOpCloseReason.INVALID_ID);

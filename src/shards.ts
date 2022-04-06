@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { WebSocket } from 'ws';
+
 import { WebappOp, WebappOpCloseReason } from './protocol';
 import { toBuffer } from './util';
 
@@ -86,8 +87,7 @@ export class Shard {
         break;
       }
       case WebappOp.EXIT: {
-        const reason: WebappOpCloseReason =
-          message.length > 4 ? message.readUInt32LE(4) : WebappOpCloseReason.SHARD_CLOSED;
+        const reason: WebappOpCloseReason = message.length > 4 ? message.readUInt32LE(4) : WebappOpCloseReason.SHARD_CLOSED;
         this.close(reason);
         break;
       }
