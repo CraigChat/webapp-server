@@ -22,7 +22,7 @@
     "fastify-rate-limit": "^5.7.2",
     "fastify-websocket": "^4.2.2",
     "nanoid": "^3.3.3",
-    "ws": "^8.5.0"
+    "ws": "^8.6.0"
   },
   "devDependencies": {
     "@types/ws": "^8.5.2",
