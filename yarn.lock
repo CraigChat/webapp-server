@@ -1205,13 +1205,21 @@ fastify-rate-limit@^5.9.0:
     fastify-rate-limit-deprecated "npm:fastify-rate-limit@5.8.0"
     process-warning "^1.0.0"
 
-fastify-websocket@^4.2.2:
+"fastify-websocket-deprecated@npm:fastify-websocket@4.2.2":
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/fastify-websocket/-/fastify-websocket-4.2.2.tgz#7fba0edee66d1d056ee900a4e58c8b5fd6af5ef0"
   integrity sha512-Cx4CZwercvoPq4fc6f09VAoa3wqp9qOQUDHp8wMkCHau4zw7wGa+C3Oi2QNUvhvNqw6N4mH8WWYLEnGXUlnumg==
   dependencies:
     fastify-plugin "^3.0.0"
     ws "^8.0.0"
+
+fastify-websocket@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/fastify-websocket/-/fastify-websocket-4.3.0.tgz#0eec382f4677886f62ae40d695f4f1f122d26dbf"
+  integrity sha512-PLoXjlKHaWOEIJ7tHStM2i8aL4kdYVB8d1Umf7TdpQ93kG7OopO7eV4IAyO545kRiE8pyL1AbjlJeZ7irDA1aA==
+  dependencies:
+    fastify-websocket-deprecated "npm:fastify-websocket@4.2.2"
+    process-warning "^1.0.0"
 
 fastify@^3.29.0:
   version "3.29.0"
