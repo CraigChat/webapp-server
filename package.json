@@ -28,7 +28,7 @@
     "@types/ws": "^8.5.2",
     "@typescript-eslint/eslint-plugin": "^5.29.0",
     "@typescript-eslint/parser": "^5.30.0",
-    "eslint": "^8.18.0",
+    "eslint": "^8.19.0",
     "eslint-config-snazzah": "^1.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "prettier": "^2.7.1",
