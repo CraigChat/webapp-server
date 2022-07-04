@@ -17,7 +17,7 @@ jobs:
           running-workflow-name: 'Automerge Dependabot PRs'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
-      - uses: fastify/github-action-merge-dependabot@v3.0.0
+      - uses: fastify/github-action-merge-dependabot@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target: minor
