@@ -6,4 +6,9 @@ Copy the `.env.example` file to `.env`, only the `SHARD_AUTH` environment variab
 
 You can run `yarn start` to start the server and run `yarn start:test-client` to create a client that will be connected with the ID and key as "test". You can put this into a PM2 instance with `pm2 start`.
 
-Alternatively, you can use Docker and run `docker-compose up -d` to spin up a container.
+You can also run this in a Docker container:
+```
+docker run --name webapp-server -e SHARD_AUTH=XXXXXX -d ghcr.io/craigchat/webapp-server:latest
+```
+
+Alternatively, you can use Docker compose and run `docker-compose up -d` to start the container if you have pulled the repository locally.
