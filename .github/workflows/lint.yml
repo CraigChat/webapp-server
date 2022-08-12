@@ -7,13 +7,16 @@ on:
       - ".prettierrc"
       - ".eslintignore"
       - ".github/workflows/lint.yml"
-  pull_request_target:
+  pull_request:
   workflow_dispatch:
 
 jobs:
   lint:
     name: Lint source code
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
