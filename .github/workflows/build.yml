@@ -9,6 +9,8 @@ on:
       - ".github/workflows/build.yml"
       - ".dockerignore"
       - "Dockerfile"
+      - "package.json"
+      - "yarn.lock"
   workflow_dispatch:
 
 env:

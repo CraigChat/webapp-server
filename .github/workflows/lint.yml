@@ -7,6 +7,8 @@ on:
       - ".prettierrc"
       - ".eslintignore"
       - ".github/workflows/lint.yml"
+      - "package.json"
+      - "yarn.lock"
   pull_request:
   workflow_dispatch:
 
