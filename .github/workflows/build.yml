@@ -1,4 +1,4 @@
-name: Build edge docker image
+name: Build master docker image
 on:
   push:
     paths:
@@ -6,7 +6,7 @@ on:
       - ".eslintrc.*"
       - ".prettierrc"
       - ".eslintignore"
-      - ".github/workflows/lint.yml"
+      - ".github/workflows/build.yml"
       - ".dockerignore"
       - "Dockerfile"
   workflow_dispatch:
