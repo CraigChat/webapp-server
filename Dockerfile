@@ -9,7 +9,6 @@ WORKDIR /build
 COPY package.json .
 COPY yarn.lock .
 RUN yarn install --immutable
-RUN yarn list
 
 COPY . .
 RUN yarn build
