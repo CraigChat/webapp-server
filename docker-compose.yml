@@ -5,7 +5,6 @@ services:
     env_file: .env
     environment:
       - PORT=9001
-      - HOST=0.0.0.0
     build:
       context: .
       dockerfile: Dockerfile

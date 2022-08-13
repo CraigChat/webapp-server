@@ -28,8 +28,6 @@ RUN rm -rf ./dist/client
 
 USER node
 EXPOSE 9001
-ENV PORT 9001
-ENV HOST 0.0.0.0
 
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["sh", "-c", "yarn start"]
+CMD ["sh", "-c", "HOST=0.0.0.0 yarn start"]
