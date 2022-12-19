@@ -27,7 +27,7 @@
   "devDependencies": {
     "@types/ws": "^8.5.2",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
-    "@typescript-eslint/parser": "^5.45.0",
+    "@typescript-eslint/parser": "^5.46.1",
     "eslint": "^8.30.0",
     "eslint-config-snazzah": "^1.2.1",
     "eslint-plugin-prettier": "^4.2.1",
