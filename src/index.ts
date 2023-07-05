@@ -24,6 +24,7 @@ dotenv.config();
 
 const app = fastify({
   logger: process.env.NODE_ENV !== 'production',
+  trustProxy: process.env.TRUST_PROXY === 'true',
   ignoreTrailingSlash: true
 });
 
