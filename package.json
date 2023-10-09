@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "dotenv": "^16.3.1",
-    "fastify": "3.27.4",
+    "fastify": "4.23.2",
     "fastify-helmet": "7.1.0",
     "fastify-rate-limit": "5.7.2",
     "fastify-websocket": "4.3.0",
