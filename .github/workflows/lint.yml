@@ -21,17 +21,17 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
     
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2.0.1
+        uses: pnpm/action-setup@v3
         with:
           version: 6.20.3
 
-      - name: Install Node v16
-        uses: actions/setup-node@v1
+      - name: Install Node v20
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.x
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -41,7 +41,7 @@ jobs:
         run: pnpm lint:fix
 
       - name: Commit changes
-        uses: EndBug/add-and-commit@v4
+        uses: EndBug/add-and-commit@v9
         with:
           add: src
           message: "chore(lint): auto-lint source code"
