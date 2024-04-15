@@ -32,13 +32,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
-          cache: 'pnpm'
+          cache: 'yarn'
 
       - name: Install dependencies
-        run: pnpm install
+        run: yarn install --immutable
 
       - name: Run ESLint
-        run: pnpm lint:fix
+        run: yarn lint:fix
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
