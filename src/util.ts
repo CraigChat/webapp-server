@@ -27,14 +27,14 @@ export function prettyLog(symbol: '+' | '-' | '>' | '<' | 'i', message: string) 
     symbol === '+'
       ? chalk.bgYellowBright.black('[ + ]')
       : symbol === '-'
-      ? chalk.bgGray.black('[ - ]')
-      : symbol === '>'
-      ? chalk.bgGreen.white('[ > ]')
-      : symbol === '<'
-      ? chalk.bgRed.white('[ < ]')
-      : symbol === 'i'
-      ? chalk.bgBlue.white('[ i ]')
-      : '';
+        ? chalk.bgGray.black('[ - ]')
+        : symbol === '>'
+          ? chalk.bgGreen.white('[ > ]')
+          : symbol === '<'
+            ? chalk.bgRed.white('[ < ]')
+            : symbol === 'i'
+              ? chalk.bgBlue.white('[ i ]')
+              : '';
 
   console.log(chalk.black.bgWhite(` ${dayjs().format('MM/DD HH:mm:ss')} `) + colorSymbol, message);
 }
