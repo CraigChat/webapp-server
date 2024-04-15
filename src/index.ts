@@ -1,8 +1,8 @@
+import fastifyHelmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
+import fastifyWebsocket from '@fastify/websocket';
 import dotenv from 'dotenv';
 import fastify from 'fastify';
-import fastifyHelmet from 'fastify-helmet';
-import rateLimit from 'fastify-rate-limit';
-import fastifyWebsocket from 'fastify-websocket';
 
 import {
   ConnectionType,
@@ -14,16 +14,14 @@ import {
   Feature,
   WebappOp,
   WebappOpCloseReason
-} from './protocol';
-import { getShardFromConnectionToken, Shard, ShardIdentifyPayload, shardsConnected } from './shards';
-import { closeWebsocket, timeoutWebsocket, toBuffer } from './util';
+} from './protocol.js';
+import { getShardFromConnectionToken, Shard, ShardIdentifyPayload, shardsConnected } from './shards.js';
+import { closeWebsocket, debug, prettyLog, timeoutWebsocket, toBuffer } from './util.js';
 
 dotenv.config();
 
-// TODO proper logging
-
 const app = fastify({
-  logger: process.env.NODE_ENV !== 'production',
+  logger: debug,
   trustProxy: process.env.TRUST_PROXY === 'true',
   ignoreTrailingSlash: true
 });
@@ -53,79 +51,82 @@ app.addHook('onRequest', async (req, reply) => {
   return;
 });
 
-// Ennuizel Websocket
-app.get('/', { websocket: true }, (connection) => {
-  timeoutWebsocket(connection.socket);
-  connection.socket.once('message', (data) => {
-    const message = toBuffer(data);
-    if (message.length < EnnuicastrParts.login.length) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_MESSAGE);
-    const cmd: EnnuicastrId = message.readUInt32LE(0);
-    if (cmd !== EnnuicastrId.LOGIN) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_ID);
+app.register(async function (app) {
+  // Ennuizel Websocket
+  app.get('/', { websocket: true }, (socket) => {
+    timeoutWebsocket(socket);
+    socket.once('message', (data) => {
+      const message = toBuffer(data);
+      if (message.length < EnnuicastrParts.login.length) return closeWebsocket(socket, WebappOpCloseReason.INVALID_MESSAGE);
+      const cmd: EnnuicastrId = message.readUInt32LE(0);
+      if (cmd !== EnnuicastrId.LOGIN) return closeWebsocket(socket, WebappOpCloseReason.INVALID_ID);
 
-    const token = message.toString('utf8', EnnuicastrParts.login.token, EnnuicastrParts.login.token + 8);
-    const shard = getShardFromConnectionToken(token);
-    if (!shard) return closeWebsocket(connection.socket, WebappOpCloseReason.NOT_FOUND);
+      const token = message.toString('utf8', EnnuicastrParts.login.token, EnnuicastrParts.login.token + 8);
+      const shard = getShardFromConnectionToken(token);
+      if (!shard) return closeWebsocket(socket, WebappOpCloseReason.NOT_FOUND);
 
-    try {
-      const username = message.toString('utf8', EnnuicastrParts.login.nick).substring(0, 32);
-      console.log('User', username, 'connecting to shard', shard.id);
-    } catch (ex) {
-      return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_USERNAME);
-    }
+      let username = '<unk>';
+      try {
+        username = message.toString('utf8', EnnuicastrParts.login.nick).substring(0, 32);
+      } catch (ex) {
+        return closeWebsocket(socket, WebappOpCloseReason.INVALID_USERNAME);
+      }
 
-    const flags = message.readUInt32LE(EnnuicastrParts.login.flags);
-    const connectionType: ConnectionType = flags & ConnectionTypeMask;
-    const dataType: DataTypeFlag = flags & DataTypeMask;
-    const isContinuous = !!(flags & Feature.CONTINUOUS);
+      const flags = message.readUInt32LE(EnnuicastrParts.login.flags);
+      const connectionType: ConnectionType = flags & ConnectionTypeMask;
+      const dataType: DataTypeFlag = flags & DataTypeMask;
+      const isContinuous = !!(flags & Feature.CONTINUOUS);
 
-    if (dataType === DataTypeFlag.FLAC && !shard.payload.flacEnabled) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_FLAGS);
-    if (isContinuous && !shard.payload.continuousEnabled) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_FLAGS);
-    if (![ConnectionType.DATA, ConnectionType.PING, ConnectionType.MONITOR].includes(connectionType))
-      return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_CONNECTION_TYPE);
+      if (dataType === DataTypeFlag.FLAC && !shard.payload.flacEnabled) return closeWebsocket(socket, WebappOpCloseReason.INVALID_FLAGS);
+      if (isContinuous && !shard.payload.continuousEnabled) return closeWebsocket(socket, WebappOpCloseReason.INVALID_FLAGS);
+      if (![ConnectionType.DATA, ConnectionType.PING, ConnectionType.MONITOR].includes(connectionType))
+        return closeWebsocket(socket, WebappOpCloseReason.INVALID_CONNECTION_TYPE);
 
-    shard.newConnection(connection.socket, message);
+      shard.newConnection(socket, message, username);
 
-    // And acknowledge them
-    const ret = Buffer.alloc(EnnuicastrParts.ack.length);
-    ret.writeUInt32LE(EnnuicastrId.ACK, 0);
-    ret.writeUInt32LE(EnnuicastrId.LOGIN, EnnuicastrParts.ack.ackd);
-    connection.socket.send(ret);
+      // And acknowledge them
+      const ret = Buffer.alloc(EnnuicastrParts.ack.length);
+      ret.writeUInt32LE(EnnuicastrId.ACK, 0);
+      ret.writeUInt32LE(EnnuicastrId.LOGIN, EnnuicastrParts.ack.ackd);
+      socket.send(ret);
+    });
   });
-});
 
-// Shard Websocket
-app.get('/shard', { websocket: true }, (connection, req) => {
-  if (req.headers.authorization !== process.env.SHARD_AUTH) return connection.socket.close();
-  timeoutWebsocket(connection.socket);
-  connection.socket.once('message', (data) => {
-    // Shard will first identify with its information in JSON because lazy
-    /**
-     * id   json
-     * XXXX -> { id: "XXXXXXXXXXXXX", ennuiKey: "XXXXXX", flacEnabled: true, continuousEnabled: true, ... }
-     */
-    const message = toBuffer(data);
-    if (message.length < 16) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_MESSAGE);
-    const cmd: WebappOp = message.readUInt32LE(0);
-    if (cmd !== WebappOp.IDENTIFY) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_MESSAGE);
+  // Shard Websocket
+  app.get('/shard', { websocket: true }, (socket, req) => {
+    if (req.headers.authorization !== process.env.SHARD_AUTH) return socket.close();
+    timeoutWebsocket(socket);
+    socket.once('message', (data) => {
+      // Shard will first identify with its information in JSON because lazy
+      /**
+       * id   json
+       * XXXX -> { id: "XXXXXXXXXXXXX", ennuiKey: "XXXXXX", flacEnabled: true, continuousEnabled: true, ... }
+       */
+      const message = toBuffer(data);
+      if (message.length < 16) return closeWebsocket(socket, WebappOpCloseReason.INVALID_MESSAGE);
+      const cmd: WebappOp = message.readUInt32LE(0);
+      if (cmd !== WebappOp.IDENTIFY) return closeWebsocket(socket, WebappOpCloseReason.INVALID_MESSAGE);
 
-    const json = message.toString('utf8', 4);
-    let payload: ShardIdentifyPayload;
-    try {
-      payload = JSON.parse(json);
-    } catch (e) {
-      return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_MESSAGE);
-    }
+      const json = message.toString('utf8', 4);
+      let payload: ShardIdentifyPayload;
+      try {
+        payload = JSON.parse(json);
+      } catch (e) {
+        return closeWebsocket(socket, WebappOpCloseReason.INVALID_MESSAGE);
+      }
 
-    if (!payload.id || !payload.ennuiKey) return closeWebsocket(connection.socket, WebappOpCloseReason.INVALID_MESSAGE);
-    if (shardsConnected.has(payload.id)) return closeWebsocket(connection.socket, WebappOpCloseReason.ALREADY_CONNECTED);
+      if (!payload.id || !payload.ennuiKey) return closeWebsocket(socket, WebappOpCloseReason.INVALID_MESSAGE);
+      if (shardsConnected.has(payload.id)) return closeWebsocket(socket, WebappOpCloseReason.ALREADY_CONNECTED);
 
-    const shard = new Shard(connection.socket, payload);
-    console.log(`Shard ${shard.id} connected (connectionToken=${shard.connectionToken})`, payload);
+      const shard = new Shard(socket, payload);
+      if (debug) console.log(`Shard ${shard.id} connected (connectionToken=${shard.connectionToken})`, payload);
+      prettyLog('+', `Recording ${shard.id} started from shard ${shard.payload.shardId} (on ${shard.payload.clientName ?? shard.payload.clientId})`);
 
-    // Respond with ready
-    const ret = Buffer.alloc(4);
-    ret.writeUInt32LE(WebappOp.READY, 0);
-    connection.socket.send(ret);
+      // Respond with ready
+      const ret = Buffer.alloc(4);
+      ret.writeUInt32LE(WebappOp.READY, 0);
+      socket.send(ret);
+    });
   });
 });
 
@@ -161,15 +162,29 @@ app.route({
   method: 'GET',
   url: '/health',
   handler: async (req, reply) => {
-    return reply.status(200).send({ ok: true });
+    return reply.status(200).send({
+      ok: true,
+      shards: shardsConnected.size,
+      clients: Array.from(shardsConnected.values())
+        .map((shard) => shard.clients.size)
+        .reduce((p, v) => p + v, 0)
+    });
   }
 });
 
-app.listen(process.env.PORT ? parseInt(process.env.PORT) : 9001, process.env.HOST || 'localhost', (err) => {
-  if (err) {
-    app.log.error(err);
-    process.exit(1);
-  }
+app.listen(
+  {
+    port: process.env.PORT ? parseInt(process.env.PORT) : 9001,
+    host: process.env.HOST || 'localhost'
+  },
+  (err, addr) => {
+    if (err) {
+      // app.log.error(err);
+      console.error('Failed to start!', err);
+      process.exit(1);
+    }
 
-  if (process.send) process.send('ready');
-});
+    prettyLog('i', `Started listening on ${addr}`);
+    if (process.send) process.send('ready');
+  }
+);

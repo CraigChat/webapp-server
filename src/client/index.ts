@@ -13,9 +13,9 @@ import {
   Feature,
   WebappOp,
   WebappOpCloseReason
-} from '../protocol';
-import { toBuffer } from '../util';
-import OggEncoder, { BOS } from './ogg';
+} from '../protocol.js';
+import { toBuffer } from '../util.js';
+import OggEncoder, { BOS } from './ogg.js';
 import {
   FLAC_HEADER_44k,
   FLAC_HEADER_44k_VAD,
@@ -25,7 +25,7 @@ import {
   OPUS_HEADERS_MONO,
   OPUS_MONO_HEADER_VAD,
   write
-} from './util';
+} from './util.js';
 
 dotenv.config();
 
@@ -85,6 +85,7 @@ class ShardClient {
         ennuiKey: opts.ennuiKey,
         clientId: opts.clientId,
         clientName: opts.clientName,
+        shardId: 0,
         flacEnabled: opts.flacEnabled,
         continuousEnabled: opts.continuousEnabled,
         serverName: opts.serverName,
@@ -106,6 +107,7 @@ class ShardClient {
 
       console.log('disconnected', WebappOpCloseReason[reason[0]]);
     });
+    this.ws.on('error', (e) => console.log('ws error', e));
   }
 
   findWebUserFromClientId(id: string) {
@@ -464,6 +466,7 @@ new ShardClient({
   id: 'test',
   ennuiKey: 'test',
   clientId: '0000000000',
+  clientName: 'test-client',
   flacEnabled: true,
   continuousEnabled: true,
   serverName: 'fake server',

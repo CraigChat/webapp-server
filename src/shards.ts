@@ -1,8 +1,8 @@
 import { nanoid } from 'nanoid';
 import { WebSocket } from 'ws';
 
-import { WebappOp, WebappOpCloseReason } from './protocol';
-import { toBuffer } from './util';
+import { WebappOp, WebappOpCloseReason } from './protocol.js';
+import { debug, prettyLog, toBuffer } from './util.js';
 
 export const shardsConnected = new Map<string, Shard>();
 
@@ -34,16 +34,17 @@ export class Shard {
     shardsConnected.set(payload.id, this);
     ws.on('message', (data) => this.parseMessage(toBuffer(data)));
     ws.on('close', (code, reason) => {
-      console.log(`Shard ${this.id} closed: ${reason}`);
+      prettyLog('-', `Recording ${this.id} closed (code ${code}): ${reason}`);
       this.close(reason.length > 0 ? reason[0] : undefined);
     });
   }
 
-  newConnection(ws: WebSocket, message: Buffer) {
+  newConnection(ws: WebSocket, message: Buffer, username: string) {
     const clientId = nanoid(8);
     this.clients.set(clientId, ws);
+    prettyLog('>', `User "${username}" (${clientId}) joined recording ${this.id}`);
     ws.on('close', (code, reason) => {
-      console.log(clientId, 'closed from shard', this.id);
+      prettyLog('<', `User "${username}" (${clientId}) left recording ${this.id} (code ${code}): ${reason}`);
       this.clients.delete(clientId);
       this.ws.send(this.wrapMessage(reason.slice(0, 10), clientId, WebappOp.CLOSE));
     });
@@ -61,7 +62,7 @@ export class Shard {
   }
 
   closeClient(clientId: string, reason?: WebappOpCloseReason) {
-    console.log('closing client', clientId, 'from shard', this.id, reason);
+    if (debug) console.log('closing client', clientId, 'from shard', this.id, reason);
     const ws = this.clients.get(clientId);
     if (!ws) return;
     ws.close(1000, Buffer.from([reason ?? WebappOpCloseReason.CLOSED]));
@@ -98,7 +99,7 @@ export class Shard {
         break;
       }
       default: {
-        console.log(`Unknown op from shard ${this.id}: ${op}`);
+        prettyLog('i', `Unknown op from recording ${this.id}: ${op}`);
         break;
       }
     }
