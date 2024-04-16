@@ -1,7 +1,8 @@
+import 'dotenv/config';
+
 import fastifyHelmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import fastifyWebsocket from '@fastify/websocket';
-import dotenv from 'dotenv';
 import fastify from 'fastify';
 
 import {
@@ -17,8 +18,6 @@ import {
 } from './protocol.js';
 import { getShardFromConnectionToken, Shard, ShardIdentifyPayload, shardsConnected } from './shards.js';
 import { closeWebsocket, debug, prettyLog, timeoutWebsocket, toBuffer } from './util.js';
-
-dotenv.config();
 
 const app = fastify({
   logger: debug,
