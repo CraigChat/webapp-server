@@ -184,7 +184,7 @@ app.listen(
       process.exit(1);
     }
 
-    prettyLog('i', `Started listening on ${addr}`);
+    prettyLog('i', `Started listening on ${addr} (${process.env.NODE_ENV || 'development'})`);
     if (process.send) process.send('ready');
   }
 );
