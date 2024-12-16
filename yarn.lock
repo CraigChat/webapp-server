@@ -175,13 +175,13 @@
   dependencies:
     fast-json-stringify "^5.7.0"
 
-"@fastify/helmet@^11.1.1":
-  version "11.1.1"
-  resolved "https://registry.yarnpkg.com/@fastify/helmet/-/helmet-11.1.1.tgz#214ae9602c2faaf8d094d8f2ec72680bbd311d85"
-  integrity sha512-pjJxjk6SLEimITWadtYIXt6wBMfFC1I6OQyH/jYVCqSAn36sgAIFjeNiibHtifjCd+e25442pObis3Rjtame6A==
+"@fastify/helmet@^13.0.0":
+  version "13.0.0"
+  resolved "https://registry.yarnpkg.com/@fastify/helmet/-/helmet-13.0.0.tgz#ce7fcc35db5cf7c12a5e342eea14071b2ef79578"
+  integrity sha512-7Ksj/9UDelZ9VhUUzVkBMRRzSSiX71T/ICT5+3m2GHmrWgnARu8OlE7ZaR7DjZhZjWzUWACst4oLjNdPSkVslw==
   dependencies:
-    fastify-plugin "^4.2.1"
-    helmet "^7.0.0"
+    fastify-plugin "^5.0.0"
+    helmet "^8.0.0"
 
 "@fastify/merge-json-schemas@^0.1.0":
   version "0.1.1"
@@ -1233,10 +1233,15 @@ fast-uri@^3.0.1:
   resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.0.3.tgz#892a1c91802d5d7860de728f18608a0573142241"
   integrity sha512-aLrHthzCjH5He4Z2H9YZ+v6Ujb9ocRuW6ZzkJQOrTxleEijANq4v1TsaPaVG1PZcuurEzrLcWRyYBYXD5cEiaw==
 
-fastify-plugin@^4.0.0, fastify-plugin@^4.2.1:
+fastify-plugin@^4.0.0:
   version "4.5.1"
   resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-4.5.1.tgz#44dc6a3cc2cce0988bc09e13f160120bbd91dbee"
   integrity sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==
+
+fastify-plugin@^5.0.0:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-5.0.1.tgz#82d44e6fe34d1420bb5a4f7bee434d501e41939f"
+  integrity sha512-HCxs+YnRaWzCl+cWRYFnHmeRFyR5GVnJTAaCJQiYzQSDwK9MgJdyAsuL3nh0EWRCYMgQ5MeziymvmAhUHYHDUQ==
 
 fastify@^4.26.2:
   version "4.29.0"
@@ -1490,10 +1495,10 @@ hasown@^2.0.0, hasown@^2.0.1, hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
-helmet@^7.0.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/helmet/-/helmet-7.2.0.tgz#8b2dcc425b4a46c88f6953481b40453cbe66b167"
-  integrity sha512-ZRiwvN089JfMXokizgqEPXsl2Guk094yExfoDXR0cBYWxtBbaSww/w+vT4WEJsBW2iTUi1GgZ6swmoug3Oy4Xw==
+helmet@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/helmet/-/helmet-8.0.0.tgz#05370fb1953aa7b81bd0ddfa459221247be6ea5c"
+  integrity sha512-VyusHLEIIO5mjQPUI1wpOAEu+wl6Q0998jzTxqUYGE45xCIcAxy3MsbEK/yyJUJ3ADeMoB6MornPH6GMWAf+Pw==
 
 ignore@^5.2.0, ignore@^5.2.4, ignore@^5.3.1:
   version "5.3.2"
