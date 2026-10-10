@@ -1,3 +1,6 @@
+> [!IMPORTANT]  
+> This service was moved inside [the main Craig repository](https://github.com/CraigChat/craig).
+
 # Craig Webapp Server
 
 This is the server for the [Craig Webapp](https://github.com/CraigChat/webapp), allowing for Discord bot shards to connect to it and accept connections and data.
